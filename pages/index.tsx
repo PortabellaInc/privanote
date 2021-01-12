@@ -125,12 +125,12 @@ export default function Home(props) {
     <div className="flex max-w-screen-lg mx-auto px-4 py-10 space-x-12">
       <div className="w-3/12" style={{ minWidth: '12rem' }}>
         <div className="mb-8 font-medium text-xl text-gray-300">
-          QuickNote 📖
+          PrivaNote 📖
         </div>
 
         <div className="mb-2 text-gray-400 text-sm">What's this?</div>
         <div className="mb-4 text-gray-400 text-sm">
-          QuickNote is a privacy first, end-to-end encrypted note taking
+          PrivaNote is a privacy first, end-to-end encrypted note taking
           solution powered by{' '}
           <span className="text-purple-400">Portabella</span>. Designed for when
           you have an idea and you want to get it down fast!
@@ -151,7 +151,7 @@ export default function Home(props) {
 
         <div className="mb-2 text-gray-400 text-sm">How do I sign up?</div>
         <div className="mb-2 text-gray-400 text-sm">
-          To use QuickNote you need a Portabella account, you can sign up{' '}
+          To use PrivaNote you need a Portabella account, you can sign up{' '}
           <a
             className="text-blue-400 text-blue-500 cursor-pointer"
             target="_blank"

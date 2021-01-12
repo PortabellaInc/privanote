@@ -5,14 +5,16 @@ function MyApp({ Component, pageProps }) {
   return (
     <>
       <Head>
-        <title>QuickNote</title>
+        <title>PrivaNote</title>
         <link rel="icon" href="/favicon.ico" />
-        <script
-          async
-          defer
-          data-domain="alexbh.dev"
-          src="https://stats.quicknote.com/js/index.js"
-        ></script>
+        {process.browser && (
+          <script
+            async
+            defer
+            data-domain="privanote.xyz"
+            src="https://stats.privanote.xyz/js/index.js"
+          ></script>
+        )}
       </Head>
       <Component {...pageProps} />
     </>

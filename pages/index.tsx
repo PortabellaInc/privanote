@@ -97,7 +97,7 @@ const Example = () => {
 
   const createReactEditor = () => () => {
     const [value, setValue] = useState(initialValuePreview);
-
+    // @ts-ignore
     const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
     return (

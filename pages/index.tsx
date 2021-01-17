@@ -339,6 +339,14 @@ export default function Home() {
     setNotes(retrieved);
   }, []);
 
+  const initialisePortabella = useCallback(async (config: any) => {
+    const { Project } = require('@portabella/sdk');
+    const pb = new Project(config);
+    await pb.fetchProject();
+    setPb(pb);
+    return pb;
+  }, []);
+
   const onSubmit = useCallback(async () => {
     await notesDB.setItem(uuidv4(), value);
     setValue(defaultValue);
@@ -374,9 +382,7 @@ export default function Home() {
           onDismiss={() => setDisplayConfig(false)}
           onSubmit={async (config) => {
             await configDB.setItem('portabella', config);
-            const { Project } = require('@portabella/sdk');
-            const pb = new Project(config);
-            await pb.fetchPublicKey();
+            const pb = await initialisePortabella(config);
             await Promise.all(notes.map((n) => pb.addCard(n)));
           }}
         />
@@ -420,22 +426,27 @@ export default function Home() {
 
           <div className="mb-2 text-gray-300 text-sm font-medium">Notes</div>
 
-          {notes.map((n) => (
-            <div
-              className={`p-2 ${
-                activeId === n.id
-                  ? 'bg-gray-700'
-                  : 'hover:bg-gray-700 cursor-pointer text-gray-400'
-              } transition text-sm rounded`}
-              onClick={() => setActiveId(n.id)}
-            >
-              {n.preview ? (
-                n.preview
-              ) : (
-                <span className="italic">No preview available</span>
-              )}
+          {notes.length > 0 && (
+            <div className="mb-1">
+              {notes.map((n) => (
+                <div
+                  className={`p-2 ${
+                    activeId === n.id
+                      ? 'bg-gray-700'
+                      : 'hover:bg-gray-700 cursor-pointer text-gray-400'
+                  } transition text-sm rounded`}
+                  onClick={() => setActiveId(n.id)}
+                >
+                  {n.preview ? (
+                    n.preview
+                  ) : (
+                    <span className="italic">No preview available</span>
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+
           <div
             onClick={() => setActiveId('')}
             className={`p-2 ${

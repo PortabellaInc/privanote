@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start"
   },
   "dependencies": {
+    "@portabella/sdk": "^0.0.4",
     "@udecode/slate-plugins": "^0.71.11",
     "autoprefixer": "^10.1.0",
     "gray-matter": "^4.0.2",

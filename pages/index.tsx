@@ -42,7 +42,7 @@ import React, {
 } from 'react';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
-import { Slate, withReact } from 'slate-react';
+import { Slate, useSelected, withReact } from 'slate-react';
 
 import { v4 as uuidv4 } from 'uuid';
 import localForage from 'localforage';
@@ -96,6 +96,14 @@ export const defaultValue: SlateDocument = [
   },
 ];
 
+function safeParseJson(str: string) {
+  try {
+    return JSON.parse(str);
+  } catch (e) {
+    return str;
+  }
+}
+
 const withPlugins = [withReact, withHistory];
 const plugins: any[] = [
   ParagraphPlugin(options),
@@ -107,6 +115,11 @@ const notesDB = localForage.createInstance({ name: 'privanote/notes' });
 const configDB = localForage.createInstance({ name: 'privanote/config' });
 
 function getPreview(node: any) {
+  if (!node) {
+    return null;
+  }
+
+  console.log('getPreview', node);
   //Early return
   if (node.text) {
     if (node.text.length >= 20) {
@@ -316,28 +329,222 @@ function ConfigurationModal({
   );
 }
 
+function DeleteModal({
+  onDismiss,
+  onDelete,
+}: {
+  onDismiss: any;
+  onDelete: any;
+}) {
+  const ref = useRef(null);
+  useEffect(() => {
+    function handleClickOutside(event: any) {
+      if (ref.current && !ref.current.contains(event.target)) {
+        onDismiss();
+      }
+    }
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [ref.current]);
+
+  return (
+    <div className="fixed z-10 inset-0 overflow-y-auto">
+      <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        {/* <!--
+      Background overlay, show/hide based on modal state.
+
+      Entering: "ease-out duration-300"
+        From: "opacity-0"
+        To: "opacity-100"
+      Leaving: "ease-in duration-200"
+        From: "opacity-100"
+        To: "opacity-0"
+    --> */}
+        <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+          <div className="absolute inset-0 bg-gray-700 opacity-75"></div>
+        </div>
+
+        {/* <!-- This element is to trick the browser into centering the modal contents. --> */}
+        <span
+          className="hidden sm:inline-block sm:align-middle sm:h-screen"
+          aria-hidden="true"
+        >
+          &#8203;
+        </span>
+        {/* <!--
+      Modal panel, show/hide based on modal state.
+
+      Entering: "ease-out duration-300"
+        From: "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+        To: "opacity-100 translate-y-0 sm:scale-100"
+      Leaving: "ease-in duration-200"
+        From: "opacity-100 translate-y-0 sm:scale-100"
+        To: "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+    --> */}
+        <div
+          ref={ref}
+          className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-headline"
+        >
+          <div className="bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="sm:flex sm:items-start">
+              <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                {/* <!-- Heroicon name: exclamation --> */}
+                <svg
+                  className="h-6 w-6 text-red-600"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                <h3
+                  className="text-lg leading-6 font-medium text-gray-300"
+                  id="modal-headline"
+                >
+                  Delete note
+                </h3>
+                <div className="mt-2">
+                  <p className="text-sm text-gray-400">
+                    Are you sure you want to delete this note? You won't be able
+                    to recover it after doing so.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            <button
+              type="button"
+              onClick={onDelete}
+              className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-800 text-base font-medium text-white hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+            >
+              Delete
+            </button>
+            <button
+              onClick={onDismiss}
+              type="button"
+              className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-gray-700 text-base font-medium text-gray-300 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface Note {
+  id: string;
+  updatedAt: number;
+  text: string;
+}
+
+let lastBlurredValue: string = '';
+
+const d = console.log;
+
 export default function Home() {
   const [value, setValue] = useState(defaultValue);
   const [notes, setNotes] = useState([]);
   const [activeId, setActiveId] = useState('');
   const [displayConfig, setDisplayConfig] = useState(false);
-  const [pb, setPb] = useState(null);
+  const [displayDeleteModal, setDisplayDeleteModal] = useState(false);
+  const [pb, setPb] = useState<any>(null);
 
-  const fetchItems = useCallback(async () => {
-    const keys = await notesDB.keys();
-    if (!keys) {
+  const onBlur = useCallback(async () => {
+    const preview = getPreview(value);
+    if (!preview) {
+      d('onBlur: no preview, returning');
       return;
     }
-    const retrieved = await Promise.all(
-      keys.map(async (key) => {
-        const value = await notesDB.getItem(key);
-        const preview = getPreview(value);
-        console.log('got preview', preview);
-        return { id: key, preview };
-      })
-    );
-    setNotes(retrieved);
-  }, []);
+
+    const text = JSON.stringify(value);
+    if (text === lastBlurredValue) {
+      d('onBlur: matching value, returning');
+      return;
+    }
+    lastBlurredValue = text;
+
+    if (pb) {
+      const card = { title: preview, description: text };
+      if (activeId) {
+        d('onBlur: portabella update');
+        await pb.updateCard(activeId, card);
+      } else {
+        d('onBlur: portabella add');
+        const id = uuidv4();
+        await pb.addCard(id, card);
+        setActiveId(id);
+      }
+    } else {
+      const card = { text, updatedAt: Date.now() };
+      if (activeId) {
+        d('onBlur: local update');
+        await notesDB.setItem(activeId, card);
+      } else {
+        d('onBlur: local add');
+        const id = uuidv4();
+        await notesDB.setItem(id, card);
+        setActiveId(id);
+      }
+    }
+
+    fetchItems();
+  }, [value, pb, activeId]);
+
+  const onDelete = useCallback(async () => {
+    if (pb) {
+      await pb.deleteCard(activeId);
+    } else {
+      await notesDB.removeItem(activeId);
+    }
+    fetchItems();
+    setActiveId('');
+  }, [activeId]);
+
+  const fetchItems = useCallback(async () => {
+    let fetched: Note[] = [];
+    if (pb) {
+      const { cards } = await pb.fetchProject();
+      d(`fetchItems: portabella`);
+      fetched = Object.entries(cards).map(([id, card]) => ({
+        id,
+        text: safeParseJson(card.description),
+        updatedAt: card.updatedAt,
+      }));
+    } else {
+      d(`fetchItems: local`);
+      const keys = await notesDB.keys();
+      if (!keys) {
+        return;
+      }
+      fetched = await Promise.all(
+        keys.map(async (key) => {
+          const { updatedAt, text } = await notesDB.getItem(key);
+          return { id: key, updatedAt, text: safeParseJson(text) };
+        })
+      );
+    }
+
+    d(`fetchItems: ${fetched.length} items`);
+    setNotes(fetched.sort((a, b) => a.updatedAt - b.updatedAt));
+  }, [pb]);
 
   const initialisePortabella = useCallback(async (config: any) => {
     const { Project } = require('@portabella/sdk');
@@ -347,29 +554,17 @@ export default function Home() {
     return pb;
   }, []);
 
-  const onSubmit = useCallback(async () => {
-    await notesDB.setItem(uuidv4(), value);
-    setValue(defaultValue);
-    fetchItems();
-  }, [value, fetchItems]);
-
-  const onSave = useCallback(() => {
-    notesDB.setItem(activeId, value);
-  }, [activeId, value]);
-
   useEffect(() => {
     fetchItems();
   }, []);
 
   useEffect(() => {
     if (!activeId) {
+      setValue(defaultValue);
       return;
     }
-    async function f() {
-      const data = await notesDB.getItem(activeId);
-      setValue(data as any);
-    }
-    f();
+
+    setValue(notes.find((n) => n.id === activeId).text);
   }, [activeId]);
 
   // @ts-ignore
@@ -385,6 +580,12 @@ export default function Home() {
             const pb = await initialisePortabella(config);
             await Promise.all(notes.map((n) => pb.addCard(n)));
           }}
+        />
+      )}
+      {displayDeleteModal && (
+        <DeleteModal
+          onDismiss={() => setDisplayDeleteModal(false)}
+          onSubmit={onDelete}
         />
       )}
       <div className="flex max-w-screen-lg mx-auto px-4 py-10 space-x-12">
@@ -426,37 +627,54 @@ export default function Home() {
 
           <div className="mb-2 text-gray-300 text-sm font-medium">Notes</div>
 
-          {notes.length > 0 && (
-            <div className="mb-1">
-              {notes.map((n) => (
-                <div
-                  className={`p-2 ${
-                    activeId === n.id
-                      ? 'bg-gray-700'
-                      : 'hover:bg-gray-700 cursor-pointer text-gray-400'
-                  } transition text-sm rounded`}
-                  onClick={() => setActiveId(n.id)}
-                >
-                  {n.preview ? (
-                    n.preview
-                  ) : (
-                    <span className="italic">No preview available</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div
+          <button
             onClick={() => setActiveId('')}
             className={`p-2 ${
               !activeId
                 ? 'bg-gray-700'
                 : 'hover:bg-gray-700 cursor-pointer text-gray-400'
-            } transition text-sm rounded`}
+            } transition text-sm rounded w-full mb-1`}
           >
             New +
-          </div>
+          </button>
+          {notes.length > 0 &&
+            notes.map((n) => (
+              <div
+                className={`p-2 ${
+                  activeId === n.id
+                    ? 'bg-gray-700'
+                    : 'hover:bg-gray-700 cursor-pointer text-gray-400'
+                } transition text-sm rounded flex items-center justify-between`}
+                onClick={() => setActiveId(n.id)}
+              >
+                <span className="italic">
+                  {getPreview(n.text) || 'No preview available'}
+                </span>
+
+                {activeId === n.id && (
+                  <button
+                    className="px-2"
+                    onClick={() => setDisplayDeleteModal(true)}
+                  >
+                    <svg
+                      className="text-gray-400"
+                      style={{ height: '1.3em' }}
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            ))}
         </div>
 
         <div className="w-9/12">
@@ -466,21 +684,12 @@ export default function Home() {
             onChange={(newValue) => setValue(newValue as SlateDocument)}
           >
             <EditablePlugins
-              style={{ minHeight: '100px' }}
+              onBlur={onBlur}
+              style={{ minHeight: '100%' }}
               plugins={plugins}
               placeholder="Write some markdown..."
             />
           </Slate>
-
-          <div className="w-full justify-end items-center flex items-center space-x-4 mt-8">
-            {activeId && <button className="text-red-500">Delete</button>}
-            <button
-              onClick={activeId ? onSave : onSubmit}
-              className="flex bg-indigo-500 hover:bg-indigo-600 transition px-4 py-2 rounded"
-            >
-              Save
-            </button>
-          </div>
         </div>
       </div>
     </>

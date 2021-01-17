@@ -6,7 +6,19 @@ module.exports = {
   ],
   darkMode: false, // or 'media' or 'class'
   theme: {
-    extend: {},
+    extend: {
+      brand: {
+        100: '#ffe6fe',
+        200: '#fabef8',
+        300: '#f59af2',
+        400: '#a3369d',
+        500: '#952e8f',
+        600: '#8a2785',
+        700: '#8a2485',
+        800: '#801d7b',
+        900: '#751671',
+      },
+    },
   },
   variants: {
     extend: {

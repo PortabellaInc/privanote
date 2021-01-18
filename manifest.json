@@ -1,0 +1,11 @@
+{
+  "name": "PrivaNote Extension",
+  "version": "1.0",
+  "manifest_version": 2,
+  "description": "Offline first, end-to-end encrypted note taking",
+  "permissions": ["tabs", "https://*/*"],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  }
+}

@@ -119,8 +119,7 @@ function getPreview(node: any) {
     return null;
   }
 
-  console.log('getPreview', node);
-  //Early return
+  // Early return
   if (node.text) {
     if (node.text.length >= 20) {
       return `${node.text.slice(0, 20).trim()}...`;
@@ -311,7 +310,10 @@ function ConfigurationModal({
             <button
               type="button"
               className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
-              onClick={() => onSubmit(config)}
+              onClick={() => {
+                onSubmit(config);
+                onDismiss();
+              }}
             >
               Activate
             </button>
@@ -430,7 +432,10 @@ function DeleteModal({
           <div className="bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
             <button
               type="button"
-              onClick={onDelete}
+              onClick={() => {
+                onDelete();
+                onDismiss();
+              }}
               className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-800 text-base font-medium text-white hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
             >
               Delete
@@ -466,6 +471,7 @@ export default function Home() {
   const [displayConfig, setDisplayConfig] = useState(false);
   const [displayDeleteModal, setDisplayDeleteModal] = useState(false);
   const [pb, setPb] = useState<any>(null);
+  const [portabellaLoaded, setPortabellaLoaded] = useState(false);
 
   const onBlur = useCallback(async () => {
     const preview = getPreview(value);
@@ -489,7 +495,7 @@ export default function Home() {
       } else {
         d('onBlur: portabella add');
         const id = uuidv4();
-        await pb.addCard(id, card);
+        await pb.addCard({ id, ...card });
         setActiveId(id);
       }
     } else {
@@ -510,7 +516,7 @@ export default function Home() {
 
   const onDelete = useCallback(async () => {
     if (pb) {
-      await pb.deleteCard(activeId);
+      await pb.removeCard(activeId);
     } else {
       await notesDB.removeItem(activeId);
     }
@@ -523,11 +529,13 @@ export default function Home() {
     if (pb) {
       const { cards } = await pb.fetchProject();
       d(`fetchItems: portabella`);
-      fetched = Object.entries(cards).map(([id, card]) => ({
-        id,
-        text: safeParseJson((card as any).description),
-        updatedAt: (card as any).updatedAt,
-      }));
+      fetched = Object.entries(cards)
+        .filter(([_, card]) => Boolean((card as any).description))
+        .map(([id, card]) => ({
+          id,
+          text: safeParseJson((card as any).description),
+          updatedAt: new Date((card as any).updatedAt).getTime(),
+        }));
     } else {
       d(`fetchItems: local`);
       const keys = await notesDB.keys();
@@ -542,20 +550,34 @@ export default function Home() {
       );
     }
 
-    d(`fetchItems: ${fetched.length} items`);
-    setNotes(fetched.sort((a, b) => a.updatedAt - b.updatedAt));
+    d(`fetchItems: ${fetched.length} items`, fetched);
+    setNotes(fetched.sort((a, b) => b.updatedAt - a.updatedAt));
   }, [pb]);
 
   const initialisePortabella = useCallback(async (config: any) => {
-    const { Project } = require('@portabella/sdk');
-    const pb = new Project(config);
-    await pb.fetchProject();
+    d('initialisePortabella');
+    const { ProjectSDK } = require('@portabella/sdk');
+    const pb = new ProjectSDK(config);
     setPb(pb);
     return pb;
   }, []);
 
   useEffect(() => {
+    if (!portabellaLoaded) {
+      return;
+    }
     fetchItems();
+  }, [portabellaLoaded, fetchItems]);
+
+  useEffect(() => {
+    async function f() {
+      const config = await configDB.getItem('portabella');
+      if (config) {
+        await initialisePortabella(config);
+      }
+      setPortabellaLoaded(true);
+    }
+    f();
   }, []);
 
   useEffect(() => {
@@ -563,8 +585,14 @@ export default function Home() {
       setValue(defaultValue);
       return;
     }
+    console.log(notes);
 
-    setValue(notes.find((n) => n.id === activeId).text);
+    const note = notes.find((n) => n.id === activeId);
+    if (!note) {
+      return;
+    }
+
+    setValue(note.text);
   }, [activeId]);
 
   // @ts-ignore
@@ -578,7 +606,15 @@ export default function Home() {
           onSubmit={async (config) => {
             await configDB.setItem('portabella', config);
             const pb = await initialisePortabella(config);
-            await Promise.all(notes.map((n) => pb.addCard(n)));
+            await Promise.all(
+              notes.map((n) =>
+                pb.addCard({
+                  n,
+                  title: getPreview(n.text),
+                  description: JSON.stringify(n.text),
+                })
+              )
+            );
           }}
         />
       )}
@@ -609,7 +645,7 @@ export default function Home() {
 
           <div className="mb-2 text-gray-400 text-sm">
             If you choose to enable backups, PrivaNote uses{' '}
-            <a href="https://portabella.io" className="text-purple-400">
+            <a href="https://portabella.io" className="text-brand-500">
               Portabella
             </a>{' '}
             to encrypt and store your data.
@@ -685,6 +721,7 @@ export default function Home() {
           >
             <EditablePlugins
               onBlur={onBlur}
+              autoFocus
               style={{ minHeight: '100%' }}
               plugins={plugins}
               placeholder="Write some markdown..."

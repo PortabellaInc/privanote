@@ -4,8 +4,7 @@
   "manifest_version": 2,
   "description": "Offline first, end-to-end encrypted note taking",
   "permissions": ["tabs", "https://*/*"],
-  "background": {
-    "scripts": ["background.js"],
-    "persistent": true
+  "chrome_url_overrides": {
+    "newtab": "./index.html"
   }
 }

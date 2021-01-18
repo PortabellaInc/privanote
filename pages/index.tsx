@@ -333,8 +333,8 @@ function DeleteModal({
   onDismiss,
   onDelete,
 }: {
-  onDismiss: any;
-  onDelete: any;
+  onDismiss: () => void;
+  onDelete: () => void | Promise<void>;
 }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -525,8 +525,8 @@ export default function Home() {
       d(`fetchItems: portabella`);
       fetched = Object.entries(cards).map(([id, card]) => ({
         id,
-        text: safeParseJson(card.description),
-        updatedAt: card.updatedAt,
+        text: safeParseJson((card as any).description),
+        updatedAt: (card as any).updatedAt,
       }));
     } else {
       d(`fetchItems: local`);
@@ -585,7 +585,7 @@ export default function Home() {
       {displayDeleteModal && (
         <DeleteModal
           onDismiss={() => setDisplayDeleteModal(false)}
-          onSubmit={onDelete}
+          onDelete={onDelete}
         />
       )}
       <div className="flex max-w-screen-lg mx-auto px-4 py-10 space-x-12">

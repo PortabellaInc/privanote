@@ -585,7 +585,6 @@ export default function Home() {
       setValue(defaultValue);
       return;
     }
-    console.log(notes);
 
     const note = notes.find((n) => n.id === activeId);
     if (!note) {

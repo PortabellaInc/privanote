@@ -163,8 +163,6 @@ export default function Home() {
   const [pb, setPb] = useState<any>(null);
   const [portabellaLoaded, setPortabellaLoaded] = useState(false);
 
-  const [hasSeenConfig, setHasSeenConfig] = useState(false);
-
   const onBlur = useCallback(async () => {
     const preview = getPreview(value);
     if (!preview) {
@@ -282,7 +280,6 @@ export default function Home() {
         await initialisePortabella(config);
       }
 
-      setHasSeenConfig(hasSeenConfig ? true : false);
       setPortabellaLoaded(true);
     }
     f();
@@ -329,7 +326,6 @@ export default function Home() {
           onDismiss={async () => {
             setDisplayConfigModal(false);
             await configDB.setItem(hasSeenConfigKey, true);
-            setHasSeenConfig(true);
           }}
           onSubmit={async (config) => {
             await configDB.setItem(portabellaConfigKey, config);
@@ -357,12 +353,10 @@ export default function Home() {
           onDismiss={async () => {
             await configDB.setItem(hasSeenConfigKey, true);
             setDisplayWelcomeModal(false);
-            setHasSeenConfig(true);
           }}
           onSubmit={async () => {
             await configDB.setItem(hasSeenConfigKey, true);
             setDisplayWelcomeModal(false);
-            setHasSeenConfig(true);
             setDisplayConfigModal(true);
           }}
         />

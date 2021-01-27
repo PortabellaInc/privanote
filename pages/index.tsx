@@ -1,101 +1,16 @@
-import {
-  DEFAULTS_ALIGN,
-  DEFAULTS_BLOCKQUOTE,
-  DEFAULTS_BOLD,
-  DEFAULTS_CODE,
-  DEFAULTS_CODE_BLOCK,
-  DEFAULTS_HEADING,
-  DEFAULTS_HIGHLIGHT,
-  DEFAULTS_IMAGE,
-  DEFAULTS_ITALIC,
-  DEFAULTS_KBD,
-  DEFAULTS_LINK,
-  DEFAULTS_LIST,
-  DEFAULTS_MEDIA_EMBED,
-  DEFAULTS_MENTION,
-  DEFAULTS_PARAGRAPH,
-  DEFAULTS_SEARCH_HIGHLIGHT,
-  DEFAULTS_STRIKETHROUGH,
-  DEFAULTS_SUBSUPSCRIPT,
-  DEFAULTS_TABLE,
-  DEFAULTS_TODO_LIST,
-  DEFAULTS_UNDERLINE,
-  EditablePlugins,
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-  HeadingPlugin,
-  ParagraphPlugin,
-  pipe,
-  PreviewPlugin,
-  SlateDocument,
-} from '@udecode/slate-plugins';
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { createEditor } from 'slate';
-import { withHistory } from 'slate-history';
-import { Slate, useSelected, withReact } from 'slate-react';
-
-import { DeleteModal, ConfigurationModal, WelcomeModal } from '../components';
-import { v4 as uuidv4 } from 'uuid';
 import localForage from 'localforage';
-
-export const headingTypes = [
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-];
-
-export const options = {
-  ...DEFAULTS_PARAGRAPH,
-  ...DEFAULTS_MENTION,
-  ...DEFAULTS_BLOCKQUOTE,
-  ...DEFAULTS_CODE_BLOCK,
-  ...DEFAULTS_LINK,
-  ...DEFAULTS_IMAGE,
-  ...DEFAULTS_MEDIA_EMBED,
-  ...DEFAULTS_TODO_LIST,
-  ...DEFAULTS_TABLE,
-  ...DEFAULTS_LIST,
-  ...DEFAULTS_HEADING,
-  ...DEFAULTS_ALIGN,
-  // marks
-  ...DEFAULTS_BOLD,
-  ...DEFAULTS_ITALIC,
-  ...DEFAULTS_UNDERLINE,
-  ...DEFAULTS_STRIKETHROUGH,
-  ...DEFAULTS_CODE,
-  ...DEFAULTS_KBD,
-  ...DEFAULTS_SUBSUPSCRIPT,
-  ...DEFAULTS_HIGHLIGHT,
-  ...DEFAULTS_SEARCH_HIGHLIGHT,
-};
-
-export const defaultValue: SlateDocument = [
-  {
-    children: [
-      {
-        type: options.p.type,
-        children: [
-          {
-            text: '',
-          },
-        ],
-      },
-    ],
-  },
-];
+import dynamic from 'next/dynamic';
+import React, { useCallback, useEffect, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import {
+  ConfigurationModal,
+  defaultValue,
+  DeleteModal,
+  WelcomeModal,
+} from '../components';
+const SlateEditor = dynamic(() => import('../components/editor'), {
+  ssr: false,
+});
 
 function safeParseJson(str: string) {
   try {
@@ -104,13 +19,6 @@ function safeParseJson(str: string) {
     return str;
   }
 }
-
-const withPlugins = [withReact, withHistory];
-const plugins: any[] = [
-  ParagraphPlugin(options),
-  HeadingPlugin(options),
-  PreviewPlugin(),
-];
 
 const notesDB = localForage.createInstance({ name: 'privanote/notes' });
 const configDB = localForage.createInstance({ name: 'privanote/config' });
@@ -263,8 +171,6 @@ export default function Home() {
     let timeout = null;
 
     async function f() {
-      const hasSeenConfig = await configDB.getItem('hasSeenConfig');
-
       // after 10 seconds we want to prompt to sign up for Portabella
       timeout = setTimeout(async () => {
         const hasSeenConfigAfterTimeout = await configDB.getItem(
@@ -316,9 +222,6 @@ export default function Home() {
     setValue(note.text);
   }, [activeId]);
 
-  // @ts-ignore
-  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
-
   return (
     <>
       {displayConfigModal && (
@@ -361,8 +264,8 @@ export default function Home() {
           }}
         />
       )}
-      <div className="flex max-w-screen-lg mx-auto px-4 py-10 space-x-12">
-        <div className="w-3/12" style={{ minWidth: '12rem' }}>
+      <div className="flex flex-col-reverse md:flex-row max-w-screen-lg mx-auto px-4 py-4 md:py-10 md:space-x-12">
+        <div className="md:w-3/12 mt-10 md:mt-0" style={{ minWidth: '12rem' }}>
           <div className="flex items-center mb-2 font-medium text-xl text-gray-300">
             PrivaNote{' '}
             <img
@@ -457,20 +360,12 @@ export default function Home() {
             ))}
         </div>
 
-        <div className="w-9/12">
-          <Slate
-            editor={editor}
+        <div className="md:w-9/12">
+          <SlateEditor
+            onChange={(newValue) => setValue(newValue)}
+            onBlur={onBlur}
             value={value}
-            onChange={(newValue) => setValue(newValue as SlateDocument)}
-          >
-            <EditablePlugins
-              onBlur={onBlur}
-              autoFocus
-              style={{ minHeight: '100%' }}
-              plugins={plugins}
-              placeholder="Write some markdown..."
-            />
-          </Slate>
+          />
         </div>
       </div>
     </>

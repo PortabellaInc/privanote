@@ -1,3 +1,5 @@
+const colors = require('tailwindcss/colors');
+
 module.exports = {
   purge: [
     './pages/**/*.{js,jsx,ts,tsx}',
@@ -19,6 +21,8 @@ module.exports = {
           800: '#a80fa0',
           900: '#990691',
         },
+
+        blue: colors.lightBlue,
       },
     },
   },

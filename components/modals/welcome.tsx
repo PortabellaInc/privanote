@@ -49,7 +49,7 @@ export function WelcomeModal({
                 <a
                   className="underline"
                   target="_blank"
-                  href="https://portabella.io/docs"
+                  href="https://portabella.io/docs/tutorials/privanote"
                 >
                   here
                 </a>

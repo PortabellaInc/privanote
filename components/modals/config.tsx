@@ -36,9 +36,10 @@ export function ConfigurationModal({
             <div className="mt-2">
               <p className="text-sm text-gray-400">
                 Setup PrivaNote configuration to write and read from Portabella.
-                This integration is end-to-end encrypted, read more about it{' '}
+                This integration is end-to-end encrypted and no one but you will
+                ever be able to see your data. Read more about it{' '}
                 <a
-                  href="https://portabella.io/docs"
+                  href="https://portabella.io/docs/tutorials/privanote"
                   className="underline hover:text-gray-500"
                   target="_blank"
                 >

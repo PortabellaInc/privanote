@@ -294,7 +294,11 @@ export default function Home() {
 
           <div className="mb-2 text-gray-400 text-sm">
             If you choose to enable backups, PrivaNote uses{' '}
-            <a href="https://portabella.io" className="text-brand-500">
+            <a
+              href="https://portabella.io"
+              className="text-brand-500"
+              target="_blank"
+            >
               Portabella
             </a>{' '}
             to encrypt and store your data.

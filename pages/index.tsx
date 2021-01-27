@@ -264,8 +264,11 @@ export default function Home() {
           }}
         />
       )}
-      <div className="flex flex-col-reverse md:flex-row max-w-screen-lg mx-auto px-4 py-4 md:py-10 md:space-x-12">
-        <div className="md:w-3/12 mt-10 md:mt-0" style={{ minWidth: '12rem' }}>
+      <div className="flex flex-col-reverse md:flex-row max-w-screen-lg mx-auto px-4 md:space-x-12">
+        <div
+          className="md:w-3/12 mt-10 md:mt-0 py-4 md:py-10"
+          style={{ minWidth: '12rem' }}
+        >
           <div className="flex items-center mb-2 font-medium text-xl text-gray-300">
             PrivaNote{' '}
             <img

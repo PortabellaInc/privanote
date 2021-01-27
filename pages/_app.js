@@ -7,7 +7,7 @@ function MyApp({ Component, pageProps }) {
       <Head>
         <title>PrivaNote</title>
         <link rel="icon" href="/logo.png" />
-        {process.browser && (
+        {process.browser && !process.env.IS_EXTENSION && (
           <script
             async
             defer

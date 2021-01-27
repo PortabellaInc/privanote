@@ -40,6 +40,7 @@ export function ConfigurationModal({
                 <a
                   href="https://portabella.io/docs"
                   className="underline hover:text-gray-500"
+                  target="_blank"
                 >
                   here
                 </a>

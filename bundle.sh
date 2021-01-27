@@ -1,7 +1,7 @@
 rm -rf .next/ out/;
 rm extension.zip;
 
-yarn next build;
+IS_EXTENSION=true yarn next build;
 yarn next export;
 
 cp manifest.json ./out;

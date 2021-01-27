@@ -42,3 +42,11 @@ h6 {
 .slate-link {
   @apply text-blue-400 hover:text-blue-500 cursor-pointer !important;
 }
+
+p,
+li,
+code,
+pre,
+blockquote {
+  @apply text-base;
+}

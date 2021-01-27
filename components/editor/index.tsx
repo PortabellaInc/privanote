@@ -153,7 +153,15 @@ export default function SlateEditor({
     >
       <HeadingToolbar
         styles={{
-          root: { flexWrap: 'wrap', border: '0px', paddingBottom: '0px' },
+          root: {
+            flexWrap: 'wrap',
+            border: '0px',
+            paddingBottom: '0px',
+            paddingTop: '1em',
+            position: 'sticky',
+            top: 0,
+            background: '#1F2937', // bg-gray-800
+          },
         }}
       >
         {/* Elements */}

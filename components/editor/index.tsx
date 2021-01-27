@@ -161,6 +161,7 @@ export default function SlateEditor({
             position: 'sticky',
             top: 0,
             background: '#1F2937', // bg-gray-800
+            zIndex: 100,
           },
         }}
       >

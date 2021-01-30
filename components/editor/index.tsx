@@ -71,12 +71,15 @@ const plugins: any[] = [
   ParagraphPlugin(options),
   BlockquotePlugin(options),
   HeadingPlugin(options),
-  // LinkPlugin({
-  //   ...options,
-  //   link: {
-  //     ...options.link,
-  //   },
-  // }),
+  LinkPlugin({
+    link: {
+      ...options.link,
+      nodeToProps: ({ element }) => ({
+        ...element.attributes,
+        target: '_blank',
+      }),
+    },
+  }),
   ListPlugin(options),
   CodeBlockPlugin(options),
   AlignPlugin(options),
@@ -124,7 +127,21 @@ const plugins: any[] = [
 const withPlugins = [
   withReact,
   withHistory,
-  // withLink({link: {type: ''}}),
+  withLink({
+    link: {
+      ...options.link,
+      // @ts-ignore
+      attributes: {
+        // @ts-ignore
+        ...options.link.attributes,
+        target: '_blank',
+      },
+      // component: (a) => {
+      //   console.log(a);
+      //   return <a href={a.element.url}>hello</a>;
+      // },
+    },
+  }),
   withList(options),
   withMarks(),
   withAutoformat({ rules: autoformatRules }),
@@ -161,87 +178,104 @@ export default function SlateEditor({
             position: 'sticky',
             top: 0,
             background: '#1F2937', // bg-gray-800
-            zIndex: 100,
+            zIndex: 5,
           },
         }}
       >
         {/* Elements */}
         <ToolbarElement
           type={options.h1.type}
-          icon={<LooksOne className="text-gray-400" />}
+          className="text-gray-400"
+          icon={<LooksOne />}
         />
         <ToolbarElement
           type={options.h2.type}
-          icon={<LooksTwo className="text-gray-400" />}
+          className="text-gray-400"
+          icon={<LooksTwo />}
         />
         <ToolbarElement
           type={options.h3.type}
-          icon={<Looks3 className="text-gray-400" />}
+          className="text-gray-400"
+          icon={<Looks3 />}
         />
         <ToolbarElement
           type={options.h4.type}
-          icon={<Looks4 className="text-gray-400" />}
+          className="text-gray-400"
+          icon={<Looks4 />}
         />
         <ToolbarElement
           type={options.h5.type}
-          icon={<Looks5 className="text-gray-400" />}
+          className="text-gray-400"
+          icon={<Looks5 />}
         />
         <ToolbarElement
           type={options.h6.type}
-          icon={<Looks6 className="text-gray-400" />}
+          className="text-gray-400"
+          icon={<Looks6 />}
         />
         <ToolbarList
           {...options}
           typeList={options.ul.type}
-          icon={<FormatListBulleted className="text-gray-400" />}
+          className="text-gray-400"
+          icon={<FormatListBulleted />}
         />
         <ToolbarList
           {...options}
           typeList={options.ol.type}
-          icon={<FormatListNumbered className="text-gray-400" />}
+          className="text-gray-400"
+          icon={<FormatListNumbered />}
         />
         <ToolbarElement
           type={options.blockquote.type}
-          icon={<FormatQuote className="text-gray-400" />}
+          className="text-gray-400"
+          icon={<FormatQuote />}
         />
         <ToolbarElement
           type={options.code_block.type}
-          icon={<CodeBlock className="text-gray-400" />}
+          className="text-gray-400"
+          icon={<CodeBlock />}
         />
 
         {/* Marks */}
         <ToolbarMark
           type={MARK_BOLD}
-          icon={<FormatBold className="text-gray-400" />}
+          className="text-gray-400"
+          icon={<FormatBold />}
         />
         <ToolbarMark
           type={MARK_ITALIC}
-          icon={<FormatItalic className="text-gray-400" />}
+          className="text-gray-400"
+          icon={<FormatItalic />}
         />
         <ToolbarMark
           type={MARK_UNDERLINE}
-          icon={<FormatUnderlined className="text-gray-400" />}
+          className="text-gray-400"
+          icon={<FormatUnderlined />}
         />
         <ToolbarMark
           type={MARK_STRIKETHROUGH}
-          icon={<FormatStrikethrough className="text-gray-400" />}
+          className="text-gray-400"
+          icon={<FormatStrikethrough />}
         />
         <ToolbarMark
           type={MARK_CODE}
-          icon={<CodeAlt className="text-gray-400" />}
+          className="text-gray-400"
+          icon={<CodeAlt />}
         />
 
-        <ToolbarAlign icon={<FormatAlignLeft className="text-gray-400" />} />
+        <ToolbarAlign className="text-gray-400" icon={<FormatAlignLeft />} />
         <ToolbarAlign
           type={options.align_center.type}
-          icon={<FormatAlignCenter className="text-gray-400" />}
+          className="text-gray-400"
+          icon={<FormatAlignCenter />}
         />
         <ToolbarAlign
           type={options.align_right.type}
-          icon={<FormatAlignRight className="text-gray-400" />}
+          className="text-gray-400"
+          icon={<FormatAlignRight />}
         />
 
-        {/* <ToolbarLink {...options} icon={<Link className="text-gray-400" />} /> */}
+        <ToolbarLink {...options} className="text-gray-400" icon={<Link />} />
       </HeadingToolbar>
       <EditablePlugins
         onBlur={onBlur}

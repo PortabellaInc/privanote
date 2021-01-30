@@ -11,10 +11,8 @@ export function Modal({
 
   useEffect(() => {
     function handleClickOutside(event: any) {
-      console.log(event);
       // @ts-ignore
       if (ref.current && !ref.current.contains(event.target)) {
-        console.log('bam');
         onDismiss();
       }
     }

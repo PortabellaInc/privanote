@@ -50,3 +50,7 @@ pre,
 blockquote {
   @apply text-base;
 }
+
+.slate-ToolbarButton-active {
+  @apply text-white !important;
+}

@@ -1,19 +1,29 @@
 import { Modal } from './utils';
 import { PortabellaConfig } from '@portabella/sdk';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export function ConfigurationModal({
   onDismiss,
   onSubmit,
+  onDelete,
+  config: injectedConfig,
 }: {
   onDismiss: () => void;
   onSubmit: (c: PortabellaConfig) => void;
+  onDelete: () => void;
+  config?: PortabellaConfig;
 }) {
   const [config, setConfig] = useState<PortabellaConfig>({
     token: '',
     projectId: '',
     teamId: '',
   });
+
+  useEffect(() => {
+    if (injectedConfig) {
+      setConfig(injectedConfig);
+    }
+  }, [injectedConfig]);
 
   const updateConfig = (property: string, value: string) =>
     setConfig((c) => ({ ...c, [property]: value }));
@@ -121,9 +131,20 @@ export function ConfigurationModal({
         <button
           onClick={onDismiss}
           type="button"
-          className="mt-3 w-full inline-flex justify-center shadow-sm px-4 py-2 text-base font-medium text-gray-300  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+          className="mt-3 w-full inline-flex justify-center shadow-sm px-4 py-2 text-base font-medium text-gray-300 hover:text-gray-400 focus:outline-none focus:ring-0 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
         >
           Cancel
+        </button>
+
+        <button
+          type="button"
+          className="mr-auto mt-3 w-full inline-flex justify-center shadow-sm px-4 py-2 text-base font-medium text-red-400 hover:text-red-600 focus:outline-none focus:ring-0 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+          onClick={() => {
+            onDelete();
+            onDismiss();
+          }}
+        >
+          Delete
         </button>
       </div>
     </Modal>

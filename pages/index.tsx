@@ -2,6 +2,7 @@ import localForage from 'localforage';
 import dynamic from 'next/dynamic';
 import React, { useCallback, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { PortabellaConfig } from '@portabella/sdk';
 import {
   ConfigurationModal,
   defaultValue,
@@ -61,6 +62,16 @@ let lastBlurredValue: string = '';
 
 const d = console.log;
 
+const getLocalCards = async () => {
+  const localKeys = await notesDB.keys();
+  return Promise.all(
+    localKeys.map(async (key) => {
+      const { updatedAt, text } = await notesDB.getItem(key);
+      return { id: key, updatedAt, text: safeParseJson(text) };
+    })
+  );
+};
+
 export default function Home() {
   const [value, setValue] = useState(defaultValue);
   const [notes, setNotes] = useState([]);
@@ -69,6 +80,7 @@ export default function Home() {
   const [displayDeleteModal, setDisplayDeleteModal] = useState(false);
   const [displayWelcomeModal, setDisplayWelcomeModal] = useState(false);
   const [pb, setPb] = useState<any>(null);
+  const [config, setConfig] = useState<PortabellaConfig | null>(null);
   const [portabellaLoaded, setPortabellaLoaded] = useState(false);
 
   const onBlur = useCallback(async () => {
@@ -83,95 +95,115 @@ export default function Home() {
       d('onBlur: matching value, returning');
       return;
     }
+
     lastBlurredValue = text;
 
-    if (pb) {
-      const card = { title: preview, description: text };
-      if (activeId) {
+    const card = { text, updatedAt: Date.now() };
+    if (activeId) {
+      d('onBlur: local update');
+      await notesDB.setItem(activeId, card);
+      if (pb) {
         d('onBlur: portabella update');
-        await pb.updateCard(activeId, card);
-      } else {
-        d('onBlur: portabella add');
-        const id = uuidv4();
-        await pb.addCard({ id, ...card });
-        setActiveId(id);
+        pb.updateCard(activeId, { title: preview, description: text });
       }
     } else {
-      const card = { text, updatedAt: Date.now() };
-      if (activeId) {
-        d('onBlur: local update');
-        await notesDB.setItem(activeId, card);
-      } else {
-        d('onBlur: local add');
-        const id = uuidv4();
-        await notesDB.setItem(id, card);
-        setActiveId(id);
+      d('onBlur: local add');
+      const id = uuidv4();
+      await notesDB.setItem(id, card);
+      setActiveId(id);
+      if (pb) {
+        d('onBlur: portabella add');
+        pb.addCard({ id, title: preview, description: text });
       }
     }
 
-    fetchItems();
+    fetchLocalItems();
   }, [value, pb, activeId]);
 
   const onDelete = useCallback(async () => {
+    await notesDB.removeItem(activeId);
     if (pb) {
-      await pb.removeCard(activeId);
-    } else {
-      await notesDB.removeItem(activeId);
+      pb.removeCard(activeId);
     }
-    fetchItems();
+    fetchLocalItems();
     setActiveId('');
-  }, [activeId]);
+  }, [activeId, pb]);
 
-  const fetchItems = useCallback(async () => {
-    let fetched: Note[] = [];
-    if (pb) {
+  const sync = useCallback(async () => {
+    const getRemoteCards = async () => {
+      if (!pb) {
+        return [];
+      }
       const { cards } = await pb.fetchProject();
-      d(`fetchItems: portabella`);
-      fetched = Object.entries(cards)
+      d(`fetchItems: portabella`, Object.keys(cards).length);
+      return Object.entries(cards)
         .filter(([_, card]) => Boolean((card as any).description))
         .map(([id, card]) => ({
           id,
           text: safeParseJson((card as any).description),
           updatedAt: new Date((card as any).updatedAt).getTime(),
         }));
-    } else {
-      d(`fetchItems: local`);
-      const keys = await notesDB.keys();
-      if (!keys) {
-        return;
-      }
-      fetched = await Promise.all(
-        keys.map(async (key) => {
-          const { updatedAt, text } = await notesDB.getItem(key);
-          return { id: key, updatedAt, text: safeParseJson(text) };
-        })
+    };
+
+    const [local, remote] = await Promise.all([
+      getLocalCards(),
+      getRemoteCards(),
+    ]);
+
+    if (pb) {
+      // sync with backend
+      const missingRemote = local.filter(
+        (x) => !remote.find((y) => x.id === y.id)
+      );
+      const missingLocal = remote.filter(
+        (x) => !local.find((y) => x.id === y.id)
+      );
+
+      await Promise.all(
+        missingLocal.map((loc) => notesDB.setItem(loc.id, loc))
+      );
+      await Promise.all(
+        missingRemote.map((rem) =>
+          pb.addCard({
+            id: rem.id,
+            title: getPreview(rem.text),
+            description: rem.text,
+          })
+        )
       );
     }
-
-    d(`fetchItems: ${fetched.length} items`);
-    setNotes(fetched.sort((a, b) => b.updatedAt - a.updatedAt));
   }, [pb]);
 
   const initialisePortabella = useCallback(async (config: any) => {
     d('initialisePortabella');
     const { ProjectSDK } = require('@portabella/sdk');
     const pb = new ProjectSDK(config);
+    await pb.fetchProject();
     setPb(pb);
     return pb;
+  }, []);
+
+  const fetchLocalItems = useCallback(async () => {
+    const local = await getLocalCards();
+    setNotes(local.sort((a, b) => a.updatedAt - b.updatedAt));
   }, []);
 
   useEffect(() => {
     if (!portabellaLoaded) {
       return;
     }
-    fetchItems();
-  }, [portabellaLoaded, fetchItems]);
+    async function f() {
+      await sync();
+      fetchLocalItems();
+    }
+    f();
+  }, [portabellaLoaded, sync, fetchLocalItems]);
 
   useEffect(() => {
     let timeout = null;
 
     async function f() {
-      // after 10 seconds we want to prompt to sign up for Portabella
+      // after 60 seconds we want to prompt to sign up for Portabella
       timeout = setTimeout(async () => {
         const hasSeenConfigAfterTimeout = await configDB.getItem(
           hasSeenConfigKey
@@ -179,10 +211,11 @@ export default function Home() {
         if (!hasSeenConfigAfterTimeout) {
           setDisplayWelcomeModal(true);
         }
-      }, 10000);
+      }, 60000);
 
       const config = await configDB.getItem(portabellaConfigKey);
       if (config) {
+        setConfig(config);
         await initialisePortabella(config);
       }
 
@@ -226,22 +259,19 @@ export default function Home() {
     <>
       {displayConfigModal && (
         <ConfigurationModal
+          config={config}
           onDismiss={async () => {
             setDisplayConfigModal(false);
             await configDB.setItem(hasSeenConfigKey, true);
           }}
           onSubmit={async (config) => {
             await configDB.setItem(portabellaConfigKey, config);
-            const pb = await initialisePortabella(config);
-            await Promise.all(
-              notes.map((n) =>
-                pb.addCard({
-                  n,
-                  title: getPreview(n.text),
-                  description: JSON.stringify(n.text),
-                })
-              )
-            );
+            initialisePortabella(config);
+          }}
+          onDelete={async () => {
+            await configDB.removeItem(portabellaConfigKey);
+            setPb(null);
+            setConfig(null);
           }}
         />
       )}

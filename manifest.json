@@ -1,6 +1,6 @@
 {
   "name": "PrivaNote Extension",
-  "version": "1.2",
+  "version": "1.3",
   "manifest_version": 2,
   "description": "Offline first, end-to-end encrypted note taking",
   "permissions": [],

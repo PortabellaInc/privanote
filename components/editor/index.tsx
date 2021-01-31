@@ -127,21 +127,21 @@ const plugins: any[] = [
 const withPlugins = [
   withReact,
   withHistory,
-  withLink({
-    link: {
-      ...options.link,
-      // @ts-ignore
-      attributes: {
-        // @ts-ignore
-        ...options.link.attributes,
-        target: '_blank',
-      },
-      // component: (a) => {
-      //   console.log(a);
-      //   return <a href={a.element.url}>hello</a>;
-      // },
-    },
-  }),
+  // withLink({
+  //   link: {
+  //     ...options.link,
+  //     // @ts-ignore
+  //     attributes: {
+  //       // @ts-ignore
+  //       ...options.link.attributes,
+  //       target: '_blank',
+  //     },
+  //     // component: (a) => {
+  //     //   console.log(a);
+  //     //   return <a href={a.element.url}>hello</a>;
+  //     // },
+  //   },
+  // }),
   withList(options),
   withMarks(),
   withAutoformat({ rules: autoformatRules }),

@@ -55,7 +55,7 @@ const portabellaConfigKey = 'portabella';
 interface Note {
   id: string;
   updatedAt: number;
-  text: string;
+  text: any;
 }
 
 let lastBlurredValue: string = '';
@@ -74,7 +74,7 @@ const getLocalCards = async () => {
 
 export default function Home() {
   const [value, setValue] = useState(defaultValue);
-  const [notes, setNotes] = useState([]);
+  const [notes, setNotes] = useState<Note[]>([]);
   const [activeId, setActiveId] = useState('');
   const [displayConfigModal, setDisplayConfigModal] = useState(false);
   const [displayDeleteModal, setDisplayDeleteModal] = useState(false);
@@ -141,7 +141,7 @@ export default function Home() {
         .map(([id, card]) => ({
           id,
           text: safeParseJson((card as any).description),
-          updatedAt: new Date((card as any).updatedAt).getTime(),
+          updatedAt: (card as any).updatedAt,
         }));
     };
 
@@ -185,7 +185,7 @@ export default function Home() {
 
   const fetchLocalItems = useCallback(async () => {
     const local = await getLocalCards();
-    setNotes(local.sort((a, b) => a.updatedAt - b.updatedAt));
+    setNotes(local.sort((a, b) => b.updatedAt - a.updatedAt));
   }, []);
 
   useEffect(() => {

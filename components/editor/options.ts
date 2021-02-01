@@ -60,8 +60,6 @@ export const options = {
   ...setDefaults(DEFAULTS_STRIKETHROUGH, {}),
   ...setDefaults(DEFAULTS_CODE, {}),
   ...setDefaults(DEFAULTS_KBD, {}),
-  ...setDefaults(DEFAULTS_HIGHLIGHT, {}),
-  ...setDefaults(DEFAULTS_SEARCH_HIGHLIGHT, {}),
 };
 
 export const inlineTypes = [options.link.type];

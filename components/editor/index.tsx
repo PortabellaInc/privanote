@@ -86,7 +86,6 @@ const plugins: any[] = [
   BoldPlugin(options),
   CodePlugin(options),
   ItalicPlugin(options),
-  HighlightPlugin(options),
   UnderlinePlugin(options),
   StrikethroughPlugin(options),
   SoftBreakPlugin({

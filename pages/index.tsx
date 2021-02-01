@@ -203,7 +203,7 @@ export default function Home() {
     let timeout = null;
 
     async function f() {
-      // after 60 seconds we want to prompt to sign up for Portabella
+      // after 2 minutes we want to prompt to sign up for Portabella
       timeout = setTimeout(async () => {
         const hasSeenConfigAfterTimeout = await configDB.getItem(
           hasSeenConfigKey
@@ -211,7 +211,7 @@ export default function Home() {
         if (!hasSeenConfigAfterTimeout) {
           setDisplayWelcomeModal(true);
         }
-      }, 60000);
+      }, 1000 * 60 * 2);
 
       const config = await configDB.getItem(portabellaConfigKey);
       if (config) {

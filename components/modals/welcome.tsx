@@ -36,6 +36,12 @@ export function WelcomeModal({
             </h3>
             <div className="mt-4">
               <p className="text-sm text-gray-400">
+                Thanks for checking our PrivaNote, to take full advantage of it
+                we'd recommend setting up the end-to-end encrypted backup. That
+                way you can sync your notes across devices and know you'll never
+                lose access to them.{' '}
+              </p>
+              <p className="text-sm text-gray-400 mt-4">
                 PrivaNote leverages{' '}
                 <a
                   href="https://portabella.io"

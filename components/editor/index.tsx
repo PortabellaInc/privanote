@@ -11,7 +11,6 @@ import {
   FormatQuote,
   FormatStrikethrough,
   FormatUnderlined,
-  Image,
   Link,
   Looks3,
   Looks4,
@@ -22,7 +21,6 @@ import {
 } from '@styled-icons/material';
 import {
   AlignPlugin,
-  BalloonToolbar,
   BlockquotePlugin,
   BoldPlugin,
   CodeBlockPlugin,
@@ -31,9 +29,7 @@ import {
   ExitBreakPlugin,
   HeadingPlugin,
   HeadingToolbar,
-  HighlightPlugin,
   ItalicPlugin,
-  LinkPlugin,
   ListPlugin,
   MARK_BOLD,
   MARK_CODE,
@@ -47,23 +43,21 @@ import {
   StrikethroughPlugin,
   ToolbarAlign,
   ToolbarElement,
-  ToolbarImage,
   ToolbarLink,
   ToolbarList,
   ToolbarMark,
   UnderlinePlugin,
+  withAutoformat,
   withInlineVoid,
-  withLink,
   withList,
   withMarks,
-  withAutoformat,
 } from '@udecode/slate-plugins';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { createEditor } from 'slate';
 import { withHistory } from 'slate-history';
 import { Slate, withReact } from 'slate-react';
-import { headingTypes, options } from './options';
 import { autoformatRules } from './autoformat';
+import { headingTypes, options } from './options';
 
 export { defaultValue } from './options';
 
@@ -71,15 +65,6 @@ const plugins: any[] = [
   ParagraphPlugin(options),
   BlockquotePlugin(options),
   HeadingPlugin(options),
-  LinkPlugin({
-    link: {
-      ...options.link,
-      nodeToProps: ({ element }) => ({
-        ...element.attributes,
-        target: '_blank',
-      }),
-    },
-  }),
   ListPlugin(options),
   CodeBlockPlugin(options),
   AlignPlugin(options),
@@ -126,21 +111,6 @@ const plugins: any[] = [
 const withPlugins = [
   withReact,
   withHistory,
-  // withLink({
-  //   link: {
-  //     ...options.link,
-  //     // @ts-ignore
-  //     attributes: {
-  //       // @ts-ignore
-  //       ...options.link.attributes,
-  //       target: '_blank',
-  //     },
-  //     // component: (a) => {
-  //     //   console.log(a);
-  //     //   return <a href={a.element.url}>hello</a>;
-  //     // },
-  //   },
-  // }),
   withList(options),
   withMarks(),
   withAutoformat({ rules: autoformatRules }),
@@ -274,7 +244,7 @@ export default function SlateEditor({
           icon={<FormatAlignRight />}
         />
 
-        <ToolbarLink {...options} className="text-gray-400" icon={<Link />} />
+        {/* <ToolbarLink {...options} className="text-gray-400" icon={<Link />} /> */}
       </HeadingToolbar>
       <EditablePlugins
         onBlur={onBlur}
